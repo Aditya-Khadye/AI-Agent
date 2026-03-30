@@ -1,0 +1,37 @@
+from pydantic import Field
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    llm_provider: str = Field(default="openai", pattern="^(openai|anthropic)$")
+    openai_api_key: str = ""
+    anthropic_api_key: str = ""
+    openai_model: str = "gpt-4o"
+    anthropic_model: str = "claude-sonnet-4-20250514"
+    embedding_model: str = "text-embedding-3-small"
+    docs_dir: str = "./data"
+    vectorstore_dir: str = "./vectorstore"
+    chunk_size: int = 1000
+    chunk_overlap: int = 200
+
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+    def validate_api_keys(self) -> None:
+        if self.llm_provider == "openai" and not self.openai_api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is required when LLM_PROVIDER is 'openai'. "
+                "Set it in your .env file or environment."
+            )
+        if self.llm_provider == "anthropic" and not self.anthropic_api_key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY is required when LLM_PROVIDER is 'anthropic'. "
+                "Set it in your .env file or environment."
+            )
+        if not self.openai_api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is required for embeddings regardless of LLM provider. "
+                "Set it in your .env file or environment."
+            )
+
+
+settings = Settings()
