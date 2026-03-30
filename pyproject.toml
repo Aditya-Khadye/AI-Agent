@@ -1,0 +1,29 @@
+[project]
+name = "rag-agent"
+version = "0.1.0"
+description = "AI Agent with Retrieval-Augmented Generation using LangChain and FAISS"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "langchain>=0.3,<0.4",
+    "langchain-openai>=0.3,<0.4",
+    "langchain-anthropic>=0.3,<0.4",
+    "langchain-community>=0.3,<0.4",
+    "langchain-text-splitters>=0.3,<0.4",
+    "faiss-cpu>=1.9,<2.0",
+    "pypdf>=5.0,<6.0",
+    "python-dotenv>=1.0,<2.0",
+    "pydantic-settings>=2.0,<3.0",
+    "click>=8.0,<9.0",
+    "rich>=13.0,<14.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-mock>=3.0"]
+
+[project.scripts]
+rag-agent = "rag_agent.cli:main"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
