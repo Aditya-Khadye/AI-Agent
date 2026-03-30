@@ -11,6 +11,23 @@ st.set_page_config(
     layout="wide",
 )
 
+
+def apply_config(llm_provider, openai_key, anthropic_key, model_name):
+    """Set environment variables and reload the settings singleton."""
+    if openai_key:
+        os.environ["OPENAI_API_KEY"] = openai_key
+    if anthropic_key:
+        os.environ["ANTHROPIC_API_KEY"] = anthropic_key
+    os.environ["LLM_PROVIDER"] = llm_provider
+    if llm_provider == "openai":
+        os.environ["OPENAI_MODEL"] = model_name
+    else:
+        os.environ["ANTHROPIC_MODEL"] = model_name
+
+    from rag_agent.config import reload_settings
+    reload_settings()
+
+
 # --- Sidebar: Configuration & Document Ingestion ---
 
 with st.sidebar:
@@ -35,16 +52,8 @@ with st.sidebar:
     else:
         model_name = st.text_input("Model", value="claude-sonnet-4-20250514")
 
-    # Apply configuration to environment
-    if openai_key:
-        os.environ["OPENAI_API_KEY"] = openai_key
-    if anthropic_key:
-        os.environ["ANTHROPIC_API_KEY"] = anthropic_key
-    os.environ["LLM_PROVIDER"] = llm_provider
-    if llm_provider == "openai":
-        os.environ["OPENAI_MODEL"] = model_name
-    else:
-        os.environ["ANTHROPIC_MODEL"] = model_name
+    # Apply configuration to environment and reload settings
+    apply_config(llm_provider, openai_key, anthropic_key, model_name)
 
     st.divider()
 
@@ -60,11 +69,6 @@ with st.sidebar:
         if not openai_key:
             st.error("OpenAI API Key is required for embeddings.")
         else:
-            # Reload settings with new env vars
-            from rag_agent.config import Settings
-            settings = Settings()
-            os.environ["OPENAI_API_KEY"] = openai_key
-
             with st.spinner("Ingesting documents..."):
                 try:
                     with tempfile.TemporaryDirectory() as tmpdir:
@@ -124,6 +128,9 @@ if prompt := st.chat_input("Ask a question about your documents..."):
     if not os.path.exists(index_path):
         st.error("No documents ingested yet. Upload and ingest documents first.")
         st.stop()
+
+    # Ensure settings are fresh
+    apply_config(llm_provider, openai_key, anthropic_key, model_name)
 
     # Show user message
     st.session_state["messages"].append({"role": "user", "content": prompt})

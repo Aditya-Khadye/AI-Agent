@@ -35,3 +35,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def reload_settings() -> Settings:
+    """Reload settings from current environment variables."""
+    global settings
+    settings = Settings()
+    return settings
