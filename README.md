@@ -9,6 +9,7 @@ A RAG (Retrieval-Augmented Generation) agent that ingests documents and answers 
 - **Agent with tools** - Search documents, list available files, and summarize content
 - **Multi-turn chat** - Interactive conversation with memory of prior exchanges
 - **Dual LLM support** - Use OpenAI (GPT-4o) or Anthropic (Claude) as the reasoning model
+- **Streamlit web UI** - Browser-based chat interface for showcasing and demos
 
 ## Quick Start
 
@@ -53,6 +54,21 @@ rag-agent ask "What are the key findings in the report?"
 rag-agent chat
 ```
 
+## Web UI (Streamlit)
+
+Launch the web interface for a visual demo:
+
+```bash
+streamlit run app.py
+```
+
+This opens a browser with:
+- Sidebar for API key configuration, model selection, and document upload
+- Chat interface with multi-turn conversation
+- One-click document ingestion
+
+To deploy on **Streamlit Community Cloud**, push to GitHub and connect at [share.streamlit.io](https://share.streamlit.io). Add your API keys in the Streamlit secrets management.
+
 ## Project Structure
 
 ```
@@ -64,6 +80,7 @@ rag_agent/
   tools.py       - Agent tools: search, document info, summarize
   agent.py       - Agent construction with LangChain
   cli.py         - CLI entry point (click + rich)
+app.py           - Streamlit web UI
 data/            - Default directory for source documents
 vectorstore/     - Persisted FAISS index
 tests/           - Unit tests
