@@ -4,7 +4,7 @@ from pathlib import Path
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.embeddings import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 import rag_agent.config as config
@@ -62,12 +62,17 @@ def chunk_documents(docs: list[Document]) -> list[Document]:
     return splitter.split_documents(docs)
 
 
-def get_embeddings() -> OpenAIEmbeddings:
-    """Create the embeddings model."""
-    return OpenAIEmbeddings(
-        model=config.settings.embedding_model,
-        api_key=config.settings.openai_api_key,
-    )
+def get_embeddings() -> Embeddings:
+    """Create the embeddings model. Uses OpenAI if key is available, otherwise HuggingFace."""
+    if config.settings.openai_api_key:
+        from langchain_openai import OpenAIEmbeddings
+        return OpenAIEmbeddings(
+            model=config.settings.embedding_model,
+            api_key=config.settings.openai_api_key,
+        )
+
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 
 def ingest(path: str) -> FAISS:

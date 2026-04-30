@@ -27,11 +27,6 @@ class Settings(BaseSettings):
                 "ANTHROPIC_API_KEY is required when LLM_PROVIDER is 'anthropic'. "
                 "Set it in your .env file or environment."
             )
-        if not self.openai_api_key:
-            raise ValueError(
-                "OPENAI_API_KEY is required for embeddings regardless of LLM provider. "
-                "Set it in your .env file or environment."
-            )
 
 
 settings = Settings()

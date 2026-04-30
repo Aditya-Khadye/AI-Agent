@@ -40,12 +40,12 @@ with st.sidebar:
     st.subheader("Configuration")
 
     llm_provider = st.selectbox("LLM Provider", ["openai", "anthropic"])
-    openai_key = st.text_input("OpenAI API Key", type="password", help="Required for embeddings (always needed)")
-    anthropic_key = st.text_input(
-        "Anthropic API Key",
-        type="password",
-        help="Required only if using Anthropic as LLM provider",
-    )
+    if llm_provider == "openai":
+        openai_key = st.text_input("OpenAI API Key", type="password", help="Required")
+        anthropic_key = ""
+    else:
+        anthropic_key = st.text_input("Anthropic API Key", type="password", help="Required")
+        openai_key = st.text_input("OpenAI API Key (optional)", type="password", help="Uses free local embeddings if not provided")
 
     if llm_provider == "openai":
         model_name = st.text_input("Model", value="gpt-4o")
@@ -66,8 +66,9 @@ with st.sidebar:
     )
 
     if uploaded_files and st.button("Ingest Documents", type="primary", use_container_width=True):
-        if not openai_key:
-            st.error("OpenAI API Key is required for embeddings.")
+        has_key = openai_key if llm_provider == "openai" else anthropic_key
+        if not has_key:
+            st.error(f"Please enter your {llm_provider.title()} API Key first.")
         else:
             with st.spinner("Ingesting documents..."):
                 try:
@@ -119,7 +120,7 @@ for msg in st.session_state["messages"]:
 # Chat input
 if prompt := st.chat_input("Ask a question about your documents..."):
     # Validate config
-    if not openai_key:
+    if llm_provider == "openai" and not openai_key:
         st.error("Please enter your OpenAI API Key in the sidebar.")
         st.stop()
     if llm_provider == "anthropic" and not anthropic_key:
