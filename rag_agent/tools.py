@@ -40,8 +40,9 @@ def retrieve_document_info(filename: str = "") -> str:
         return "No documents have been ingested yet."
 
     sources: set[str] = set()
-    for doc_id in vectorstore.docstore._dict:
-        doc = vectorstore.docstore._dict[doc_id]
+    store = getattr(vectorstore.docstore, "_dict", None) or getattr(vectorstore.docstore, "store", {})
+    for doc_id in store:
+        doc = store[doc_id]
         source = doc.metadata.get("source", "unknown")
         if not filename or filename.lower() in source.lower():
             sources.add(source)

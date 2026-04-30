@@ -1,21 +1,22 @@
 from langchain_core.language_models import BaseChatModel
 
-from rag_agent.config import settings
+import rag_agent.config as config
 
 
 def get_llm() -> BaseChatModel:
     """Create and return the configured LLM instance."""
-    if settings.llm_provider == "openai":
+    s = config.settings
+    if s.llm_provider == "openai":
         from langchain_openai import ChatOpenAI
 
         return ChatOpenAI(
-            model=settings.openai_model,
-            api_key=settings.openai_api_key,
+            model=s.openai_model,
+            api_key=s.openai_api_key,
         )
     else:
         from langchain_anthropic import ChatAnthropic
 
         return ChatAnthropic(
-            model=settings.anthropic_model,
-            api_key=settings.anthropic_api_key,
+            model=s.anthropic_model,
+            api_key=s.anthropic_api_key,
         )

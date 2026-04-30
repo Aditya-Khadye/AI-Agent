@@ -76,10 +76,10 @@ with st.sidebar:
                             file_path = Path(tmpdir) / uf.name
                             file_path.write_bytes(uf.getvalue())
 
-                        from rag_agent.ingest import load_documents, chunk_documents, ingest
+                        from rag_agent.ingest import load_documents, chunk_documents, ingest as run_ingest
                         docs = load_documents(tmpdir)
                         chunks = chunk_documents(docs)
-                        ingest(tmpdir)
+                        run_ingest(tmpdir)
 
                     st.success(f"Ingested {len(docs)} document(s) ({len(chunks)} chunks)")
                     st.session_state["docs_ingested"] = True

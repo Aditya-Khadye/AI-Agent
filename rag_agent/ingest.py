@@ -7,7 +7,7 @@ from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from rag_agent.config import settings
+import rag_agent.config as config
 
 SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
 
@@ -55,8 +55,8 @@ def load_documents(path: str) -> list[Document]:
 def chunk_documents(docs: list[Document]) -> list[Document]:
     """Split documents into chunks using recursive character splitting."""
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=settings.chunk_size,
-        chunk_overlap=settings.chunk_overlap,
+        chunk_size=config.settings.chunk_size,
+        chunk_overlap=config.settings.chunk_overlap,
         length_function=len,
     )
     return splitter.split_documents(docs)
@@ -65,8 +65,8 @@ def chunk_documents(docs: list[Document]) -> list[Document]:
 def get_embeddings() -> OpenAIEmbeddings:
     """Create the embeddings model."""
     return OpenAIEmbeddings(
-        model=settings.embedding_model,
-        api_key=settings.openai_api_key,
+        model=config.settings.embedding_model,
+        api_key=config.settings.openai_api_key,
     )
 
 
@@ -79,10 +79,10 @@ def ingest(path: str) -> FAISS:
     chunks = chunk_documents(docs)
     embeddings = get_embeddings()
 
-    index_path = os.path.join(settings.vectorstore_dir, "index.faiss")
+    index_path = os.path.join(config.settings.vectorstore_dir, "index.faiss")
     if os.path.exists(index_path):
         vectorstore = FAISS.load_local(
-            settings.vectorstore_dir,
+            config.settings.vectorstore_dir,
             embeddings,
             allow_dangerous_deserialization=True,
         )
@@ -90,5 +90,5 @@ def ingest(path: str) -> FAISS:
     else:
         vectorstore = FAISS.from_documents(chunks, embeddings)
 
-    vectorstore.save_local(settings.vectorstore_dir)
+    vectorstore.save_local(config.settings.vectorstore_dir)
     return vectorstore
