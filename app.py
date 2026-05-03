@@ -12,17 +12,21 @@ st.set_page_config(
 )
 
 
-def apply_config(llm_provider, openai_key, anthropic_key, model_name):
+def apply_config(llm_provider, openai_key, anthropic_key, google_key, model_name):
     """Set environment variables and reload the settings singleton."""
     if openai_key:
         os.environ["OPENAI_API_KEY"] = openai_key
     if anthropic_key:
         os.environ["ANTHROPIC_API_KEY"] = anthropic_key
+    if google_key:
+        os.environ["GOOGLE_API_KEY"] = google_key
     os.environ["LLM_PROVIDER"] = llm_provider
     if llm_provider == "openai":
         os.environ["OPENAI_MODEL"] = model_name
-    else:
+    elif llm_provider == "anthropic":
         os.environ["ANTHROPIC_MODEL"] = model_name
+    else:
+        os.environ["GOOGLE_MODEL"] = model_name
 
     from rag_agent.config import reload_settings
     reload_settings()
@@ -39,21 +43,24 @@ with st.sidebar:
     # LLM Configuration
     st.subheader("Configuration")
 
-    llm_provider = st.selectbox("LLM Provider", ["openai", "anthropic"])
+    llm_provider = st.selectbox("LLM Provider", ["openai", "anthropic", "google"])
+
+    openai_key = ""
+    anthropic_key = ""
+    google_key = ""
+
     if llm_provider == "openai":
         openai_key = st.text_input("OpenAI API Key", type="password", help="Required")
-        anthropic_key = ""
-    else:
-        anthropic_key = st.text_input("Anthropic API Key", type="password", help="Required")
-        openai_key = st.text_input("OpenAI API Key (optional)", type="password", help="Uses free local embeddings if not provided")
-
-    if llm_provider == "openai":
         model_name = st.text_input("Model", value="gpt-4o")
-    else:
+    elif llm_provider == "anthropic":
+        anthropic_key = st.text_input("Anthropic API Key", type="password", help="Required")
         model_name = st.text_input("Model", value="claude-sonnet-4-20250514")
+    else:
+        google_key = st.text_input("Google API Key", type="password", help="Required")
+        model_name = st.text_input("Model", value="gemini-2.0-flash")
 
     # Apply configuration to environment and reload settings
-    apply_config(llm_provider, openai_key, anthropic_key, model_name)
+    apply_config(llm_provider, openai_key, anthropic_key, google_key, model_name)
 
     st.divider()
 
@@ -66,7 +73,8 @@ with st.sidebar:
     )
 
     if uploaded_files and st.button("Ingest Documents", type="primary", use_container_width=True):
-        has_key = openai_key if llm_provider == "openai" else anthropic_key
+        key_map = {"openai": openai_key, "anthropic": anthropic_key, "google": google_key}
+        has_key = key_map[llm_provider]
         if not has_key:
             st.error(f"Please enter your {llm_provider.title()} API Key first.")
         else:
@@ -120,18 +128,16 @@ for msg in st.session_state["messages"]:
 # Chat input
 if prompt := st.chat_input("Ask a question about your documents..."):
     # Validate config
-    if llm_provider == "openai" and not openai_key:
-        st.error("Please enter your OpenAI API Key in the sidebar.")
-        st.stop()
-    if llm_provider == "anthropic" and not anthropic_key:
-        st.error("Please enter your Anthropic API Key in the sidebar.")
+    key_map = {"openai": openai_key, "anthropic": anthropic_key, "google": google_key}
+    if not key_map[llm_provider]:
+        st.error(f"Please enter your {llm_provider.title()} API Key in the sidebar.")
         st.stop()
     if not os.path.exists(index_path):
         st.error("No documents ingested yet. Upload and ingest documents first.")
         st.stop()
 
     # Ensure settings are fresh
-    apply_config(llm_provider, openai_key, anthropic_key, model_name)
+    apply_config(llm_provider, openai_key, anthropic_key, google_key, model_name)
 
     # Show user message
     st.session_state["messages"].append({"role": "user", "content": prompt})

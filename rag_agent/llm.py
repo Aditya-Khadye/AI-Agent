@@ -13,6 +13,13 @@ def get_llm() -> BaseChatModel:
             model=s.openai_model,
             api_key=s.openai_api_key,
         )
+    elif s.llm_provider == "google":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        return ChatGoogleGenerativeAI(
+            model=s.google_model,
+            google_api_key=s.google_api_key,
+        )
     else:
         from langchain_anthropic import ChatAnthropic
 
